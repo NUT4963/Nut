@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8" />
+    <title>Healthy Lifestyle & Fitness Feedback</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #f4f4f4; 
+            padding: 30px;
+            max-width: 900px; 
+            margin: 40px auto; 
+            line-height: 1.6; 
+            color: #333; 
+        }
+
+        header {
+            background-image: url(https://drsuttclinic.com/wp-content/uploads/2020/07/%E0%B8%9F%E0%B8%B4%E0%B8%95%E0%B9%80%E0%B8%99%E0%B8%AA%E0%B9%80%E0%B8%A5%E0%B9%88%E0%B8%99%E0%B8%AD%E0%B8%A2%E0%B9%88%E0%B8%B2%E0%B8%87%E0%B9%84%E0%B8%A3%E0%B9%84%E0%B8%A1%E0%B9%88%E0%B9%83%E0%B8%AB%E0%B9%89%E0%B9%80%E0%B8%88%E0%B9%87%E0%B8%9A%E0%B8%95%E0%B8%B1%E0%B8%A7.jpg);
+            background-size: cover;
+            background-position: center;
+            height: 300px; 
+            border-radius: 12px; 
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+        }
+
+        header h1 {
+            color: #fff; 
+            background-color: rgba(0, 0, 0, 0.6); 
+            padding: 15px 30px; 
+            border-radius: 8px;
+            font-size: 2.5em; 
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3); 
+        }
+
+        h1, h2 {
+            color: #007bff; 
+            margin-bottom: 15px;
+            border-bottom: 2px solid #007bff; 
+            padding-bottom: 5px;
+        }
+
+        .review {
+            background: #fff; 
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); 
+            border: 1px solid #ddd; 
+        }
+
+        .review strong {
+            font-size: 1.1em;
+            color: #28a745; 
+        }
+
+        .review p {
+            margin-top: 10px;
+            color: #555;
+        }
+
+        .review img {
+            max-width: 100%;
+            margin-top: 15px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .review button {
+            background: #dc3545; 
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease; 
+        }
+
+        .review button:hover {
+            background: #c82333;
+        }
+
+        button[type="submit"] {
+            background: #28a745; 
+        }
+
+        button[type="submit"]:hover {
+            background: #218838;
+        }
+
+        textarea, input[type="text"], input[type="file"] {
+            width: calc(100% - 20px); 
+            padding: 10px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        #search {
+            margin-top: 30px;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1em;
+            color: #333;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        #search:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        #reviewsContainer {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Healthy Lifestyle & Fitness Feedback</h1>
+    <header></header>
+
+    <form id="reviewForm">
+        <label>Name:</label>
+        <input type="text" id="name" required />
+
+        <label>Review:</label>
+        <textarea id="review" rows="4" required></textarea>
+
+        <label>Upload Image (JPEG/PNG):</label>
+        <input type="file" id="imageUpload" accept="image/png, image/jpeg" />
+
+        <button type="submit">Post Review</button>
+    </form>
+
+    <input type="text" id="search" placeholder="ค้นหาชื่อหรือข้อความในรีวิว..." />
+
+    <h2>Feedback</h2>
+    <div id="reviewsContainer"></div>
+
+    <script>
+        const form = document.getElementById('reviewForm');
+        const reviewsContainer = document.getElementById('reviewsContainer');
+        const searchInput = document.getElementById('search');
+        let savedReviews = JSON.parse(localStorage.getItem('reviews')) || [];
+
+        function saveReviews() {
+            localStorage.setItem('reviews', JSON.stringify(savedReviews));
+        }
+
+        function renderReviews(filter = '') {
+            reviewsContainer.innerHTML = '';
+            savedReviews
+                .filter(({ name, review }) => name.toLowerCase().includes(filter) || review.toLowerCase().includes(filter))
+                .forEach((data, index) => addReview(data, index));
+        }
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value;
+            const review = document.getElementById('review').value;
+            const imageInput = document.getElementById('imageUpload');
+            const file = imageInput.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function () {
+                    const imageUrl = reader.result;
+                    savedReviews.unshift({ name, review, image: imageUrl });
+                    saveReviews();
+                    renderReviews();
+                };
+                reader.readAsDataURL(file);
+            } else {
+                savedReviews.unshift({ name, review, image: null });
+                saveReviews();
+                renderReviews();
+            }
+
+            form.reset();
+        });
+
+        function addReview({ name, review, image }, index) {
+            const reviewDiv = document.createElement('div');
+            reviewDiv.classList.add('review');
+            reviewDiv.innerHTML = `
+                <strong>${name}</strong>
+                <p>${review}</p>
+                ${image ? `<img src="${image}" style="max-width: 100%;" />` : ''}
+                <button onclick="editReview(${index})">แก้ไข</button>
+                <button onclick="deleteReview(${index})">ลบ</button>
+            `;
+            reviewsContainer.appendChild(reviewDiv);
+        }
+
+        function deleteReview(index) {
+            if (confirm('คุณต้องการลบรีวิวนี้หรือไม่?')) {
+                savedReviews.splice(index, 1);
+                saveReviews();
+                renderReviews(searchInput.value.toLowerCase());
+            }
+        }
+
+        function editReview(index) {
+            const { name, review } = savedReviews[index];
+            document.getElementById('name').value = name;
+            document.getElementById('review').value = review;
+            savedReviews.splice(index, 1);
+            saveReviews();
+            renderReviews(searchInput.value.toLowerCase());
+        }
+
+        searchInput.addEventListener('input', () => {
+            renderReviews(searchInput.value.toLowerCase());
+        });
+
+        renderReviews();
+    </script>
+</body>
+</html>
